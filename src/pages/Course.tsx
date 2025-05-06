@@ -17,8 +17,8 @@ export default function Course() {
   const [showMyPage, setShowMyPage] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const mapRef = useRef<HTMLDivElement | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [map, setMap] = useState<kakao.maps.Map | null>(null);
+
+  const [, setMap] = useState<kakao.maps.Map | null>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [places, setPlaces] = useState<Place[]>([
     {
