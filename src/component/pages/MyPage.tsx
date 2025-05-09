@@ -1,5 +1,6 @@
 import style from "../less/MyPage.module.less";
-
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { FiEdit } from "react-icons/fi";
 import { BsListCheck } from "react-icons/bs";
 import { MdLogout } from "react-icons/md";
@@ -7,11 +8,54 @@ import { BiInfoCircle } from "react-icons/bi";
 import { FaRegCommentDots } from "react-icons/fa";
 import { RiFileList3Line } from "react-icons/ri";
 
+import defaultProfile from "../pages/img/profile.jpg";
+
 interface MyPageProps {
   onClose: () => void;
 }
 
+// 사용자 정보 타입 정의
+interface UserInfo {
+  name: string;
+  email: string;
+  phoneNumber: string;
+  birthOfDate: string;
+  identity: string;
+  password: string;
+  profilePhoto: string | null;
+}
+
 export default function MyPage({ onClose }: MyPageProps) {
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  // 컴포넌트 마운트 시 사용자 정보 가져오기
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken"); // 저장된 토큰 사용
+
+    if (!token) {
+      console.error("JWT 토큰이 없습니다. 로그인 후 다시 시도하세요.");
+      return;
+    }
+
+    axios
+      .get("http://54.180.239.50:8080/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setUserInfo(response.data);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 500) {
+          alert("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } else {
+          alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+        console.error("유저 정보 불러오기 실패:", error);
+      });
+  }, []);
+
   return (
     <div className={style.modalBackground} onClick={onClose}>
       <div className={style.modal} onClick={(e) => e.stopPropagation()}>
@@ -19,12 +63,15 @@ export default function MyPage({ onClose }: MyPageProps) {
           {/* Profile Section */}
           <div className={style.profileSection}>
             <div className={style.profileImg}>
-              {/* Default profile image */}
-              <div className={style.avatarPlaceholder}></div>
+              {/* 프로필 이미지 조건부 렌더링 */}
+              <img
+                src={userInfo?.profilePhoto || defaultProfile}
+                alt="프로필 이미지"
+                className={style.avatarPlaceholder}
+              />
             </div>
             <div className={style.profileInfo}>
-              <h2 className={style.userName}>사용자 이름</h2>
-              <p className={style.userIntro}>사용자 한줄소개</p>
+              <h2 className={style.userName}>{userInfo?.name || "사용자 이름"}</h2>
             </div>
           </div>
 
