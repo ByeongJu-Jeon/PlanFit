@@ -12,6 +12,7 @@ const SignUpComponent: React.FC<SignUpComponentProps> = ({ onBack }) => {
       <form className={style.form}>
         <input type="text" placeholder="이름" className={style.input} />
         <input type="email" placeholder="이메일" className={style.input} />
+        <input type="text" placeholder="아이디" className={style.input} />
         <input type="password" placeholder="비밀번호" className={style.input} />
         <button type="submit" className={style.button}>
           가입하기
