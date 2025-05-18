@@ -17,6 +17,10 @@ export default function CreateCourse() {
   const [showSearch, setShowSearch] = useState(false);
   const [selectedPlaces, setSelectedPlaces] = useState<Place[]>([]);
   const [showMyPage, setShowMyPage] = useState(false);
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState(""); // "HH:MM" 형태
+  const [content, setContent] = useState("");
 
   const handleShowModal = () => {
     setShowMyPage(true);
@@ -46,6 +50,52 @@ export default function CreateCourse() {
     }
   };
 
+  const handleSave = async () => {
+    const [hour, minute] = startTime.split(":").map(Number);
+
+    const requestDto = {
+      title,
+      date,
+      startTime: {
+        hour,
+        minute,
+        second: 0,
+        nano: 0,
+      },
+      content,
+      course: {
+        location: selectedPlaces.length > 0 ? selectedPlaces[0].address : "",
+        spaces: selectedPlaces.map((place) => ({
+          googlePlacesIdentifier: place.id,
+        })),
+      },
+    };
+
+    try {
+      const token = localStorage.getItem("accessToken"); // 또는 쿠키 등
+
+      const response = await fetch("http://54.180.239.50:8080/schedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "", // 토큰이 있다면 붙이기
+        },
+        body: JSON.stringify(requestDto),
+      });
+
+      if (response.ok) {
+        alert("일정이 성공적으로 저장되었습니다!");
+        navigate("/MainPage");
+      } else {
+        console.log("보내는 데이터:", JSON.stringify(requestDto, null, 2));
+        alert("일정 저장에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("저장 오류:", error);
+      alert("서버 연결 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <div className={style.container}>
       <div className={style.function}>
@@ -62,7 +112,7 @@ export default function CreateCourse() {
 
       <div className={style.section}>
         <div className={style.title}>
-          코스 제작<div>저장하기</div>
+          코스 제작<div onClick={handleSave}>저장하기</div>
         </div>
         <div className={style.info}>
           <div className={style.formSection}>
@@ -70,19 +120,30 @@ export default function CreateCourse() {
             <form className={style.form}>
               <label>
                 제목:
-                <input type="text" placeholder="제목을 입력하세요" />
+                <input
+                  type="text"
+                  placeholder="제목을 입력하세요"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
               </label>
               <label>
                 코스 일자:
-                <input type="date" />
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </label>
               <label>
                 시작 시간:
-                <input type="time" />
+                <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
               </label>
               <label>
                 메모:
-                <textarea placeholder="메모를 입력하세요 (최대 500자)" maxLength={500} rows={5} />
+                <textarea
+                  placeholder="메모를 입력하세요 (최대 500자)"
+                  maxLength={500}
+                  rows={5}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
               </label>
             </form>
           </div>

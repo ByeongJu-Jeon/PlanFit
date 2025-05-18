@@ -1,53 +1,34 @@
 import style from "../less/Course.module.less";
 import { useEffect, useRef, useState } from "react";
-import { format, addDays, subDays } from "date-fns";
+import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import MyPage from "../component/pages/MyPage";
 
-interface Place {
-  id: number;
-  name: string;
-  address: string;
-  imageUrl: string;
-  visited: boolean;
+interface Schedule {
+  title: string;
+  date: string;
+  startTime: {
+    hour: number;
+    minute: number;
+    second: number;
+    nano: number;
+  };
+  location: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any; // latitude, longitude는 서버에서 응답으로 포함됨
 }
 
 export default function Course() {
   const navigate = useNavigate();
   const [showMyPage, setShowMyPage] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const mapRef = useRef<HTMLDivElement | null>(null);
-
   const [, setMap] = useState<kakao.maps.Map | null>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
-  const [places, setPlaces] = useState<Place[]>([
-    {
-      id: 1,
-      name: "성수 연무장길",
-      address: "서울 성동구 연무장길 47",
-      imageUrl: "https://via.placeholder.com/80",
-      visited: false,
-    },
-    {
-      id: 2,
-      name: "한강공원",
-      address: "서울 영등포구 여의도동",
-      imageUrl: "https://via.placeholder.com/80",
-      visited: false,
-    },
-  ]);
 
-  const toggleVisited = (id: number) => {
-    setPlaces((prev) => prev.map((place) => (place.id === id ? { ...place, visited: !place.visited } : place)));
-  };
-
-  const handleShowModal = () => {
-    setShowMyPage(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowMyPage(false);
-  };
+  const handleShowModal = () => setShowMyPage(true);
+  const handleCloseModal = () => setShowMyPage(false);
 
   useEffect(() => {
     const checkKakaoLoaded = () => {
@@ -61,15 +42,39 @@ export default function Course() {
   }, []);
 
   useEffect(() => {
-    if (!isKakaoLoaded || !mapRef.current) return;
+    const fetchSchedules = async () => {
+      try {
+        const response = await fetch("http://54.180.239.50:8080/schedule/upcoming");
+        const data = await response.json();
+        if (data.length > 0) {
+          setSchedules(data);
+          setCurrentIndex(0);
+        }
+      } catch (error) {
+        console.error("일정 불러오기 실패:", error);
+      }
+    };
+    fetchSchedules();
+  }, []);
+
+  useEffect(() => {
+    if (!isKakaoLoaded || !mapRef.current || schedules.length === 0) return;
+
+    const currentSchedule = schedules[currentIndex];
+    if (!currentSchedule.latitude || !currentSchedule.longitude) return;
 
     const mapInstance = new window.kakao.maps.Map(mapRef.current, {
-      center: new window.kakao.maps.LatLng(37.5665, 126.978), // 서울 시청 좌표
+      center: new window.kakao.maps.LatLng(currentSchedule.latitude, currentSchedule.longitude),
       level: 3,
     });
 
+    new window.kakao.maps.Marker({
+      map: mapInstance,
+      position: new window.kakao.maps.LatLng(currentSchedule.latitude, currentSchedule.longitude),
+    });
+
     setMap(mapInstance);
-  }, [isKakaoLoaded]);
+  }, [isKakaoLoaded, currentIndex, schedules]);
 
   return (
     <div className={style.container}>
@@ -84,52 +89,45 @@ export default function Course() {
           <div onClick={handleShowModal}>마이페이지</div>
         </div>
       </div>
+
       <div className={style.section}>
-        {/* 상단 바 */}
         <header className={style.header}>
           <button className={style.actionBtn}>수정하기</button>
           <h1 className={style.courseTitle}>나의 코스</h1>
           <button className={style.actionBtn}>포스팅하기</button>
         </header>
 
-        {/* 날짜 네비게이션 */}
         <div className={style.dateSelector}>
-          <button onClick={() => setSelectedDate(subDays(selectedDate, 1))}>◀</button>
-          <span>{format(selectedDate, "yyyy-MM-dd")}</span>
-          <button onClick={() => setSelectedDate(addDays(selectedDate, 1))}>▶</button>
+          <button onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))} disabled={currentIndex === 0}>
+            ◀
+          </button>
+          <span>
+            {schedules.length > 0
+              ? format(new Date(schedules[currentIndex].date), "yyyy-MM-dd")
+              : format(new Date(), "yyyy-MM-dd")}
+          </span>
+          <button
+            onClick={() => setCurrentIndex((prev) => Math.min(prev + 1, schedules.length - 1))}
+            disabled={currentIndex >= schedules.length - 1}
+          >
+            ▶
+          </button>
         </div>
 
-        {/* 메인 콘텐츠 */}
         <div className={style.mainContent}>
-          {/* 좌측: Kakao Map */}
-          {/* 왼쪽: 지도 + 메모 */}
-          <div className={style.leftPanel}>
-            <div ref={mapRef} className={style.mapBox} />
-            <div className={style.memoBox}></div>
-          </div>
-
-          {/* 우측: 장소 리스트 */}
-          <div className={style.placeList}>
-            {places.map((place) => (
-              <div key={place.id} className={style.placeItem}>
-                <img src={place.imageUrl} alt={place.name} />
-                <div className={style.placeText}>
-                  <div className={style.placeName}>{place.name}</div>
-                  <div className={style.placeAddress}>{place.address}</div>
-                </div>
-                <button
-                  className={`${style.circleButton} ${place.visited ? style.visited : ""}`}
-                  onClick={() => toggleVisited(place.id)}
-                >
-                  {place.visited ? "✔" : "○"}
-                </button>
+          {schedules.length === 0 ? (
+            <div className={style.emptyMessage}>제작된 코스가 없습니다. 코스를 만들어보세요!</div>
+          ) : (
+            <>
+              <div ref={mapRef} className={style.mapBox}></div>
+              <div className={style.memoBox}>
+                <p>{schedules[currentIndex].title}</p>
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
-      {/* 모달이 열리면 MyPage 컴포넌트를 모달로 표시 */}
       {showMyPage && (
         <>
           <div className={style.overlay} onClick={handleCloseModal}></div>
