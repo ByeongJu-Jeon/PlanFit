@@ -1,0 +1,92 @@
+.modalBackground {
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.modal {
+  width: 100%;
+  height: 100%;
+  padding: 2rem 1.5rem; /* 전체 패딩 줄이기 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: #fdfdfd;
+  box-sizing: border-box;
+  overflow: hidden; /* 스크롤 제거 */
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  gap: 0.6rem;
+  flex: 1; /* form이 남은 공간 차지 */
+  overflow-y: auto;
+  padding-right: 0.5rem; /* 스크롤바로 인한 layout shift 방지 */
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+input,
+select {
+  margin-top: 0.3em;
+  padding: 0.6em;
+  font-size: 0.95rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  background-color: white;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  flex-shrink: 0;
+}
+
+.submit,
+.cancel {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.submit {
+  background-color: #2c7c45;
+  color: white;
+}
+
+.cancel {
+  background-color: #ccc;
+  color: black;
+}
+
+.submit:hover {
+  background-color: #276c3e;
+}
+
+.cancel:hover {
+  background-color: #aaa;
+}
