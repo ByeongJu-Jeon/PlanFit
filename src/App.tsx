@@ -9,6 +9,7 @@ import Course from "./pages/Course";
 import Like from "./pages/Like";
 import CreatePost from "./pages/CreatePost";
 import EditInfo from "./component/pages/EditInfo";
+import EditCourse from "./pages/EditCourse";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/Course" element={<Course />} />
         <Route path="/Like" element={<Like />} />
         <Route path="/EditInfo" element={<EditInfo />} />
+        <Route path="/EditCourse/:scheduleId" element={<EditCourse />} />
       </Routes>
     </Router>
   );

@@ -92,7 +92,22 @@ export default function Course() {
 
       <div className={style.section}>
         <header className={style.header}>
-          <button className={style.actionBtn}>수정하기</button>
+          <div className={style.actionGroup}>
+            <button
+              className={style.actionBtn}
+              onClick={() => {
+                const selected = schedules[currentIndex];
+                if (selected && selected.id) {
+                  navigate(`/EditCourse/${selected.id}`);
+                } else {
+                  alert("수정할 코스를 찾을 수 없습니다.");
+                }
+              }}
+            >
+              수정하기
+            </button>
+            <button className={style.actionBtn}>삭제하기</button>
+          </div>
           <h1 className={style.courseTitle}>나의 코스</h1>
           <button className={style.actionBtn}>포스팅하기</button>
         </header>
