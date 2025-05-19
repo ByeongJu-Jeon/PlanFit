@@ -111,10 +111,8 @@ const SignUpComponent: React.FC<SignUpComponentProps> = ({ onBack }) => {
           type="text"
           value={loginId}
           placeholder="아이디"
-          onChange={(e) => {
-            setLoginId(e.target.value);
-            checkIdAvailability(e.target.value);
-          }}
+          onChange={(e) => setLoginId(e.target.value)}
+          onBlur={() => checkIdAvailability(loginId)}
           className={style.input}
         />
         <input
