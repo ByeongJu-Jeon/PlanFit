@@ -60,7 +60,7 @@ export default function MyPage({ onClose }: MyPageProps) {
       });
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      navigate("/login");
+      navigate("/WelcomePage");
     } catch (error) {
       console.error("로그아웃 실패", error);
     }
@@ -79,7 +79,7 @@ export default function MyPage({ onClose }: MyPageProps) {
       });
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      navigate("/login");
+      navigate("/WelcomePage");
     } catch (error) {
       console.error("회원 탈퇴 실패", error);
     }
